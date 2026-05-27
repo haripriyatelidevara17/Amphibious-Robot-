@@ -1,0 +1,101 @@
+#define BLYNK_TEMPLATE_ID "xxxxxxxxx" 
+#define BLYNK_DEVICE_NAME "Testing Template" 
+#define BLYNK_AUTH_TOKEN "xxxxxxxxx" 
+// Comment this out to disable prints and save space 
+#define BLYNK_PRINT Serial 
+#include <ESP8266WiFi.h> 
+#include <BlynkSimpleEsp8266.h> 
+char auth[] = BLYNK_AUTH_TOKEN; 
+char ssid[] = "xxxxxxxxx"; 
+char pass[] = "xxxxxxxxx"; 
+// Set your LED and physical button pins here 
+const int ledPin1 = 2; 
+const int ledPin2 = 2; 
+const int ledPin3 = 2; 
+const int btnPin1 = 1; 
+const int btnPin2 = 3; 
+const int btnPin3 = 13; 
+const int btnPin4 = 15; 
+BlynkTimer timer; 
+void checkPhysicalButton(); 
+int ledState = LOW; 
+int btnState = HIGH; 
+int RelayPin1 = 4; 
+int RelayPin2 = 5; 
+int RelayPin3 = 12; 
+int RelayPin4 = 14; 
+// Every time we connect to the cloud... 
+BLYNK_CONNECTED() { 
+// Request the latest state from the server 
+Blynk.syncVirtual(V0); 
+Blynk.syncVirtual(V1); 
+Blynk.syncVirtual(V2); 
+Blynk.syncVirtual(V3); 
+} 
+BLYNK_WRITE(V0) { 
+int pinValue = param.asInt(); 
+ 
+  digitalWrite(RelayPin1, pinValue); 
+} 
+BLYNK_WRITE(V1) { 
+  int pinValue = param.asInt(); 
+  digitalWrite(RelayPin2, pinValue);  
+} 
+BLYNK_WRITE(V2) { 
+  int pinValue = param.asInt(); 
+  digitalWrite(RelayPin3, pinValue); 
+} 
+BLYNK_WRITE(V3) {   
+  int pinValue = param.asInt(); 
+  digitalWrite(RelayPin4, pinValue); 
+} 
+ 
+void checkPhysicalButton() 
+{ 
+  if (digitalRead(btnPin) == LOW) { 
+    // btnState is used to avoid sequential toggles 
+    if (btnState != LOW) { 
+ 
+      // Toggle LED state 
+      ledState = !ledState; 
+      digitalWrite(ledPin, ledState); 
+ 
+      // Update Button Widget 
+      Blynk.virtualWrite(V2, ledState); 
+    } 
+    btnState = LOW; 
+  } else { 
+    btnState = HIGH; 
+  } 
+} 
+ 
+void setup() 
+{ 
+  // Debug console 
+  Serial.begin(115200); 
+ 
+  Blynk.begin(auth, ssid, pass); 
+  // You can also specify server: 
+  //Blynk.begin(auth, ssid, pass, "blynk.cloud", 80); 
+  //Blynk.begin(auth, ssid, pass, IPAddress(192,168,1,100), 8080); 
+ 
+  pinMode(ledPin, OUTPUT); 
+   
+  pinMode(RelayPin1, OUTPUT); 
+  pinMode(RelayPin2, OUTPUT); 
+  pinMode(RelayPin3, OUTPUT); 
+  pinMode(RelayPin4, OUTPUT); 
+pinMode(btnPin, INPUT_PULLUP); 
+//TURN OFF all Relays on Start  
+digitalWrite(RelayPin1, HIGH); 
+digitalWrite(RelayPin2, HIGH); 
+digitalWrite(RelayPin3, HIGH); 
+digitalWrite(RelayPin4, HIGH); 
+digitalWrite(ledPin, ledState); 
+// Setup a function to be called every 100 ms 
+timer.setInterval(100L, checkPhysicalButton); 
+} 
+void loop() 
+{ 
+Blynk.run(); 
+}
